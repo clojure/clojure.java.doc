@@ -8,7 +8,7 @@ A Clojure library for accessing JDK javadocs in your REPL
 
 ```clojure
 {:deps {org.clojure/java.javadoc {:git/url "https://github.com/clojure/java.javadoc"
-                                  :git/sha "abc123"}}}
+                                  :git/sha "b98dfbc6360964ae5831ed21f4b794f05568e8d0"}}}
 ```
 
 ### In the REPL with add-libs
@@ -32,7 +32,7 @@ For usage without modifying your project deps:
 Invoke directly from the command line, useful for piping into a .md file to display in your editor:
 
 ```bash
-clojure -Sdeps '{:deps {org.clojure/java.javadoc {:git/url "https://github.com/clojure/java.javadoc" :git/sha "abc123"}}}' \
+clojure -Sdeps '{:deps {org.clojure/java.javadoc {:git/url "https://github.com/clojure/java.javadoc" :git/sha "b98dfbc6360964ae5831ed21f4b794f05568e8d0"}}}' \
   -M -e "(require '[java-javadocs.core :refer [javadoc]]) (javadoc String)"
 ```
 
