@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '21'
+
+    - name: Install CLI
+      run: |
+        curl -L -O https://github.com/clojure/brew-install/releases/latest/download/posix-install.sh
+        chmod +x posix-install.sh
+        sudo ./posix-install.sh
+        clojure
+
+    - name: Run tests
+      run: clojure -M:test
