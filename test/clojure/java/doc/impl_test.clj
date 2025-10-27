@@ -1,7 +1,7 @@
-(ns java-javadocs.core-test
+(ns clojure.java.doc.impl-test
   (:require
     [clojure.test :refer [deftest testing is]]
-    [java-javadocs.core :as sut])
+    [clojure.java.doc.impl :as sut])
   (:import [org.jsoup Jsoup]))
 
 (deftest get-method-detail-test

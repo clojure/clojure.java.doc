@@ -1,4 +1,4 @@
-# java.javadocs
+# clojure.java.doc
 
 A Clojure library for accessing JDK javadocs in your REPL
 
@@ -7,8 +7,8 @@ A Clojure library for accessing JDK javadocs in your REPL
 ### deps.edn
 
 ```clojure
-{:deps {org.clojure/java.javadoc {:git/url "https://github.com/clojure/java.javadoc"
-                                  :git/sha "b98dfbc6360964ae5831ed21f4b794f05568e8d0"}}}
+{:deps {org.clojure/clojure.java.doc {:git/url "https://github.com/clojure/java.javadoc"
+                                      :git/sha "b98dfbc6360964ae5831ed21f4b794f05568e8d0"}}}
 ```
 
 ### In the REPL with add-libs
@@ -19,12 +19,12 @@ For usage without modifying your project deps:
 ;; This require is only necessary if not in user namespace
 (require '[clojure.repl.deps :refer [add-lib]])
 
-(add-lib 'org.clojure/java.javadoc)
+(add-lib 'org.clojure/clojure.java.doc)
 
-(require '[java-javadocs.core :refer [javadoc javadoc-data]])
+(require '[clojure.java.doc.api :refer [jdoc jdoc-data]])
 
 ;; Now you can use it
-(javadoc String)
+(jdoc String)
 ```
 
 ### From the Command Line
@@ -32,40 +32,40 @@ For usage without modifying your project deps:
 Invoke directly from the command line, useful for piping into a .md file to display in your editor:
 
 ```bash
-clojure -Sdeps '{:deps {org.clojure/java.javadoc {:git/url "https://github.com/clojure/java.javadoc" :git/sha "b98dfbc6360964ae5831ed21f4b794f05568e8d0"}}}' \
-  -M -e "(require '[java-javadocs.core :refer [javadoc]]) (javadoc String)"
+clojure -Sdeps '{:deps {org.clojure/clojure.java.doc {:git/url "https://github.com/clojure/clojure.java.doc" :git/sha "b98dfbc6360964ae5831ed21f4b794f05568e8d0"}}}' \
+  -M -e "(require '[clojure.java.doc.api :refer [jdoc]]) (jdoc String)"
 ```
 
 ## Usage
 
 The core namespace provides two functions:
 
-### javadoc
+### jdoc
 
 Prints a markdown formatted version of the javadoc description:
 
 ```clojure
-(require '[java-javadocs.core :refer [javadoc javadoc-data]])
+(require '[clojure.java.doc.api :refer [jdoc jdoc-data]])
 
 ;; Print class description
-(javadoc String)
+(jdoc String)
 
 ;; Print all overloads of a method
-(javadoc String/valueOf)
+(jdoc String/valueOf)
 
 ;; Specify a specific overload using param-tags
-(javadoc ^[char/1] String/valueOf)
+(jdoc ^[char/1] String/valueOf)
 
 ;; Use _ to match any type:
-(javadoc ^[_ int int] String/.substring)
+(jdoc ^[_ int] String/.substring)
 ```
 
-### javadoc-md
+### jdoc-data
 
 Returns structured data instead of printing:
 
 ```clojure
-(javadoc-data String)
+(jdoc-data String)
 ;; => {:classname "java.lang.String"
 ;;     :class-description-html "..."
 ;;     :class-description-md "..."
@@ -75,7 +75,7 @@ Returns structured data instead of printing:
 ;;                :clojure-call "^[int] String/valueOf"}
 ;;               ...]}
 
-(javadoc-data ^[char/1] String/valueOf)
+(jdoc-data ^[char/1] String/valueOf)
 ;; => {:classname "java.lang.String"
 ;;     :class-description-html "..."
 ;;     :class-description-md "..."

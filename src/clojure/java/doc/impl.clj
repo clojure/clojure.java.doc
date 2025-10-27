@@ -1,4 +1,4 @@
-(ns java-javadocs.core
+(ns clojure.java.doc.impl
   (:require
     [clojure.string :as str])
   (:import [com.vladsch.flexmark.html2md.converter FlexmarkHtmlConverter]
@@ -6,15 +6,25 @@
 
 (set! *warn-on-reflection* true)
 
-(defn javadoc-url [^String classname]
+(defn- check-java-version [^String version-str]
+  (let [version (Integer/parseInt version-str)
+        min-version 17]
+    (when (< version min-version)
+      (throw (ex-info
+               (str "Java " min-version " or higher is required. Current version: " version-str)
+               {:current-version version-str
+                :minimum-version min-version})))))
+
+(defn- javadoc-url [^String classname]
   (let [java-version (System/getProperty "java.specification.version")
+        _ (check-java-version java-version)
         classname (str/replace classname #"\$.*" "")
         klass (Class/forName classname)
         module-name (.getName (.getModule klass))
         url-path (.replace classname \. \/)]
     (str "https://docs.oracle.com/en/java/javase/" java-version "/docs/api/" module-name "/" url-path ".html")))
 
-(defn html-to-md [^String html]
+(defn- html-to-md [^String html]
   (.convert ^FlexmarkHtmlConverter (.build (FlexmarkHtmlConverter/builder)) html))
 
 (defn- resolve-class-name [class-part]
@@ -105,71 +115,47 @@
         (str "^[" (str/join " " clojure-types) "] " class-part separator method-name))
       (str class-part separator method-name))))
 
-  (defn parse-javadoc
-    "parse the javadoc HTML for a class or method into a data structure:
-    {:classname 'java.lang.String'
-     :class-description-html '...'
-     :class-description-md '...'
-     :methods [...]
-     :selected-method [{:signature 'valueOf(char[] data)'
-                        :description 'Returns the string representation...'
-                        :static? true
-                        :clojure-call '^[char/1] String/valueOf'
-                        :method-description-html '...'
-                        :method-description-md '...'}]}"
-    [s param-tags]
-    (let [[class-part method-part] (str/split s #"/\.?" 2)
-          class-name (resolve-class-name class-part)
-          doc (Jsoup/parse (slurp (javadoc-url class-name)))
-          class-desc-section (.selectFirst doc "section.class-description")
-          method-rows (.select doc "div.method-summary-table.col-second")
-          all-methods (vec (for [^org.jsoup.nodes.Element method-div method-rows]
-                             (let [desc-div ^org.jsoup.nodes.Element (.nextElementSibling method-div)
-                                   signature (.text (.select method-div "code"))
-                                   modifier-div ^org.jsoup.nodes.Element (.previousElementSibling method-div)
-                                   modifier-html (when modifier-div (.html modifier-div))
-                                   is-static? (and modifier-html (str/includes? modifier-html "static"))]
-                               {:signature signature
-                                :description (.text (.select desc-div ".block"))
-                                :static? is-static?
-                                :clojure-call (clojure-call-syntax class-part signature is-static?)})))
-          class-html (.outerHtml class-desc-section)
-          result {:classname class-name
-                  :class-description-html class-html
-                  :class-description-md (html-to-md class-html)
-                  :methods all-methods}]
-      (if method-part
-        (let [filtered (filter-methods all-methods method-part param-tags)]
-          (assoc result :selected-method
-                 (mapv #(get-method-detail doc %) filtered)))
-        result)))
+(defn parse-javadoc
+  "parse the javadoc HTML for a class or method into a data structure:
+  {:classname 'java.lang.String'
+   :class-description-html '...'
+   :class-description-md '...'
+   :methods [...]
+   :selected-method [{:signature 'valueOf(char[] data)'
+                      :description 'Returns the string representation...'
+                      :static? true
+                      :clojure-call '^[char/1] String/valueOf'
+                      :method-description-html '...'
+                      :method-description-md '...'}]}"
+  [s param-tags]
+  (let [[class-part method-part] (str/split s #"/\.?" 2)
+        class-name (resolve-class-name class-part)
+        doc (Jsoup/parse (slurp (javadoc-url class-name)))
+        class-desc-section (.selectFirst doc "section.class-description")
+        method-rows (.select doc "div.method-summary-table.col-second")
+        all-methods (vec (for [^org.jsoup.nodes.Element method-div method-rows]
+                           (let [desc-div ^org.jsoup.nodes.Element (.nextElementSibling method-div)
+                                 signature (.text (.select method-div "code"))
+                                 modifier-div ^org.jsoup.nodes.Element (.previousElementSibling method-div)
+                                 modifier-html (when modifier-div (.html modifier-div))
+                                 is-static? (and modifier-html (str/includes? modifier-html "static"))]
+                             {:signature signature
+                              :description (.text (.select desc-div ".block"))
+                              :static? is-static?
+                              :clojure-call (clojure-call-syntax class-part signature is-static?)})))
+        class-html (.outerHtml class-desc-section)
+        result {:classname class-name
+                :class-description-html class-html
+                :class-description-md (html-to-md class-html)
+                :methods all-methods}]
+    (if method-part
+      (let [filtered (filter-methods all-methods method-part param-tags)]
+        (assoc result :selected-method
+               (mapv #(get-method-detail doc %) filtered)))
+      result)))
 
-(defn javadoc-data-fn [s param-tags]
-  (parse-javadoc s param-tags))
-
-(defn- print-javadoc [{:keys [class-description-md selected-method]}]
+(defn print-javadoc [{:keys [class-description-md selected-method]}]
   (if selected-method
     (doseq [{:keys [method-description-md]} selected-method]
       (println method-description-md))
     (println class-description-md)))
-
-(defn javadoc-fn [s param-tags]
-  (print-javadoc (javadoc-data-fn s param-tags)))
-
-(defmacro javadoc-data
-  "a map containg javadoc data for a class or method
-   Examples:
-     (javadoc-data String)                   ; Get class data
-     (javadoc-data String/valueOf)           ; Get data for all valueOf overloads
-     (javadoc-data ^[char/1] String/valueOf) ; Get data for specific overload"
-  [class-or-method]
-  `(javadoc-data-fn ~(str class-or-method) '~(:param-tags (meta class-or-method))))
-
-(defmacro javadoc
-  "print javadoc for a class or method
-   Examples:
-     (javadoc String)                    ; Print class description
-     (javadoc String/valueOf)            ; Print all valueOf overloads
-     (javadoc ^[char/1] String/valueOf)  ; Print specific overload"
-  [class-or-method]
-  `(javadoc-fn ~(str class-or-method) '~(:param-tags (meta class-or-method))))
