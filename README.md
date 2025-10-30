@@ -8,7 +8,7 @@ A Clojure library for accessing JDK javadocs in your REPL
 
 ```clojure
 {:deps {org.clojure/clojure.java.doc {:git/url "https://github.com/clojure/java.javadoc"
-                                      :git/sha "7126d2530958f21763a7f7002be602e6def44724"}}}
+                                      :git/sha "54ada3611e1372ad30b03112f5b7c16ea8f47bbc"}}}
 ```
 
 ### In the REPL with add-libs
@@ -19,7 +19,7 @@ For usage without modifying your project deps:
 ;; This require is only necessary if not in user namespace
 (require '[clojure.repl.deps :refer [add-lib]])
 
-(add-lib 'io.github.clojure/clojure.java.doc {:git/sha "7126d2530958f21763a7f7002be602e6def44724"})
+(add-lib 'io.github.clojure/clojure.java.doc {:git/sha "54ada3611e1372ad30b03112f5b7c16ea8f47bbc"})
 
 (require '[clojure.java.doc.api :refer [jdoc jdoc-data]])
 
@@ -32,7 +32,7 @@ For usage without modifying your project deps:
 Invoke directly from the command line, useful for piping into a .md file to display in your editor:
 
 ```bash
-clojure -Sdeps '{:deps {org.clojure/clojure.java.doc {:git/url "https://github.com/clojure/clojure.java.doc" :git/sha "7126d2530958f21763a7f7002be602e6def44724"}}}' \
+clojure -Sdeps '{:deps {org.clojure/clojure.java.doc {:git/url "https://github.com/clojure/clojure.java.doc" :git/sha "54ada3611e1372ad30b03112f5b7c16ea8f47bbc"}}}' \
   -M -e "(require '[clojure.java.doc.api :refer [jdoc]]) (jdoc String)"
 ```
 
