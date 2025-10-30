@@ -1,6 +1,6 @@
 (ns clojure.java.doc.api
   (:require
-    [clojure.java.doc.impl :refer [parse-javadoc print-javadoc]]))
+    [clojure.java.doc.impl :refer [parse-javadoc print-javadoc print-signatures]]))
 
 (defn javadoc-data-fn [s param-tags]
   (parse-javadoc s param-tags))
@@ -25,3 +25,11 @@
      (jdoc ^[char/1] String/valueOf)  ; Print specific overload"
   [class-or-method]
   `(javadoc-fn ~(str class-or-method) '~(:param-tags (meta class-or-method))))
+
+(defn sigs-fn [s param-tags]
+  (print-signatures (javadoc-data-fn s param-tags)))
+
+(defmacro sigs
+  "print method signatures in param tags form"
+  [class-or-method]
+  `(sigs-fn ~(str class-or-method) '~(:param-tags (meta class-or-method))))

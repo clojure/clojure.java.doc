@@ -160,3 +160,8 @@
       (doseq [{:keys [method-description-md]} selected-method]
         (println (condense-lines method-description-md)))
       (println (condense-lines class-description-md)))))
+
+(defn print-signatures [{:keys [methods selected-method]}]
+  (let [methods-to-print (or selected-method methods)]
+    (doseq [{:keys [clojure-call]} methods-to-print]
+      (println clojure-call))))

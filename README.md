@@ -38,7 +38,7 @@ clojure -Sdeps '{:deps {org.clojure/clojure.java.doc {:git/url "https://github.c
 
 ## Usage
 
-The core namespace provides two functions:
+The core namespace provides three functions:
 
 ### jdoc
 
@@ -58,6 +58,23 @@ Prints a markdown formatted version of the javadoc description:
 
 ;; Use _ to match any type:
 (jdoc ^[_ int] String/.substring)
+```
+
+### sigs
+
+Prints the method signatures in param tags form:
+
+```clojure
+(sigs String/valueOf)
+;; => ^[boolean] String/valueOf
+;;    ^[char] String/valueOf
+;;    ^[char/1] String/valueOf
+;;    ^[char/1 int int] String/valueOf
+;;    ^[double] String/valueOf
+;;    ^[float] String/valueOf
+;;    ^[int] String/valueOf
+;;    ^[long] String/valueOf
+;;    ^[Object] String/valueOf
 ```
 
 ### jdoc-data
