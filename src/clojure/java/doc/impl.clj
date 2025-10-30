@@ -155,7 +155,8 @@
       result)))
 
 (defn print-javadoc [{:keys [class-description-md selected-method]}]
-  (if selected-method
-    (doseq [{:keys [method-description-md]} selected-method]
-      (println method-description-md))
-    (println class-description-md)))
+  (let [condense-lines (fn [s] (str/replace s #"\n{3,}" "\n\n"))]
+    (if selected-method
+      (doseq [{:keys [method-description-md]} selected-method]
+        (println (condense-lines method-description-md)))
+      (println (condense-lines class-description-md)))))
